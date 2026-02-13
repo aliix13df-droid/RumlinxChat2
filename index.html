@@ -3,104 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VyxChat Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>VyxChat Pro + Status</title>
     <style>
-        :root {
-            --primary: #008069;
-            --bg-color: #d1d7db;
-            --chat-bg: #efe7dd; /* WhatsApp default */
-            --header-text: #fff;
-            --surface: #fff;
-            --text-primary: #111b21;
-            --text-secondary: #667781;
-            --msg-sent: #dcf8c6;
-            --msg-received: #fff;
-            --input-bg: #f0f2f5;
-        }
-
-        [data-theme="dark"] {
-            --primary: #202c33;
-            --bg-color: #111b21;
-            --chat-bg: #0b141a; /* Dark pattern */
-            --header-text: #aebac1;
-            --surface: #202c33;
-            --text-primary: #e9edef;
-            --text-secondary: #8696a0;
-            --msg-sent: #005c4b;
-            --msg-received: #202c33;
-            --input-bg: #2a3942;
-        }
-
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Roboto', sans-serif; background-color: var(--bg-color); height: 100vh; display: flex; justify-content: center; overflow: hidden; }
-        #app { width: 100%; max-width: 450px; background: var(--surface); display: flex; flex-direction: column; height: 100%; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        :root { --primary: #008069; --bg: #d1d7db; --surface: #fff; --text: #111b21; --msg-sent: #dcf8c6; --msg-rec: #fff; --chat-bg: #efe7dd; --status-ring: #25d366; }
+        [data-theme="dark"] { --primary: #202c33; --bg: #111b21; --surface: #202c33; --text: #e9edef; --msg-sent: #005c4b; --msg-rec: #202c33; --chat-bg: #0b141a; --status-ring: #00a884; }
+        * { box-sizing: border-box; font-family: -apple-system, sans-serif; }
+        body { margin: 0; background-color: var(--bg); height: 100vh; display: flex; justify-content: center; }
+        #app { width: 100%; max-width: 450px; background: var(--surface); display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
         
-        /* HEADER */
-        header { background-color: var(--primary); color: var(--header-text); padding: 10px 15px; display: flex; align-items: center; gap: 15px; height: 60px; z-index: 10; transition: 0.3s; }
-        #back-btn { display: none; background: none; border: none; color: var(--header-text); font-size: 22px; cursor: pointer; }
-        .header-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .header-title { font-weight: bold; font-size: 18px; }
-        .header-status { font-size: 13px; opacity: 0.8; height: 16px; }
-        
-        /* Theme Toggle */
-        #theme-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--header-text); }
+        header { background: var(--primary); color: white; padding: 10px 15px; display: flex; align-items: center; gap: 10px; height: 60px; z-index: 10; }
+        #back-btn { display: none; background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        .header-info { flex: 1; }
 
-        .screen { display: none; flex-direction: column; height: 100%; flex: 1; }
+        /* DURUM (STATUS) BAR */
+        .status-bar { display: flex; gap: 15px; padding: 15px; overflow-x: auto; background: var(--surface); border-bottom: 1px solid rgba(0,0,0,0.1); scrollbar-width: none; }
+        .status-bar::-webkit-scrollbar { display: none; }
+        .status-item { display: flex; flex-direction: column; align-items: center; min-width: 65px; cursor: pointer; }
+        .status-circle { width: 55px; height: 55px; border-radius: 50%; padding: 2px; border: 2.5px solid #ccc; display: flex; align-items: center; justify-content: center; position: relative; }
+        .status-circle.active { border-color: var(--status-ring); }
+        .status-avatar { width: 100%; height: 100%; background: #667781; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        .status-name { font-size: 11px; margin-top: 5px; color: var(--text); max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .add-status { position: absolute; bottom: 0; right: 0; width: 18px; height: 18px; background: var(--status-ring); border-radius: 50%; border: 2px solid var(--surface); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; }
+
+        /* EKRANLAR */
+        .screen { display: none; flex-direction: column; height: 100%; flex: 1; overflow: hidden; }
         .active { display: flex; }
 
-        /* GİRİŞ EKRANI */
-        #login-screen { justify-content: center; align-items: center; padding: 30px; background: var(--input-bg); color: var(--text-primary); }
-        input { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid var(--text-secondary); border-radius: 10px; outline: none; background: var(--surface); color: var(--text-primary); }
-        .btn { background: #008069; color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; }
-
-        /* KULLANICI LİSTESİ */
-        #user-list { flex: 1; overflow-y: auto; background: var(--surface); }
+        .user-list { flex: 1; overflow-y: auto; background: var(--surface); }
+        .user-item { padding: 12px 15px; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; cursor: pointer; color: var(--text); }
         
-        /* Benim Durumum Kısmı */
-        .my-profile { padding: 15px; background: var(--surface); border-bottom: 1px solid var(--input-bg); display: flex; align-items: center; gap: 15px; cursor: pointer; }
-        
-        .user-item { padding: 15px; border-bottom: 1px solid var(--input-bg); cursor: pointer; display: flex; align-items: center; gap: 15px; transition: 0.2s; }
-        .user-item:hover { background: var(--input-bg); }
-        
-        .avatar-container { position: relative; }
-        .avatar { width: 50px; height: 50px; background: #667781; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 22px; }
-        .status-dot { position: absolute; bottom: 2px; right: 2px; width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--surface); background: #ccc; }
-        .online { background: #25d366; }
-        
-        .user-info { flex: 1; }
-        .user-name { font-weight: bold; font-size: 17px; color: var(--text-primary); }
-        .user-status { font-size: 14px; color: var(--text-secondary); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        /* SOHBET EKRANI */
+        /* CHAT */
         #chat-container { flex: 1; overflow-y: auto; padding: 15px; background: var(--chat-bg); background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); display: flex; flex-direction: column; gap: 8px; }
-        [data-theme="dark"] #chat-container { opacity: 0.9; }
+        .message { max-width: 80%; padding: 8px 12px; border-radius: 8px; font-size: 15px; position: relative; color: var(--text); box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+        .sent { align-self: flex-end; background: var(--msg-sent); }
+        .received { align-self: flex-start; background: var(--msg-rec); }
+        .msg-info { display: flex; justify-content: flex-end; align-items: center; gap: 3px; font-size: 10px; opacity: 0.6; margin-top: 3px; }
 
-        .message-group { max-width: 80%; display: flex; flex-direction: column; position: relative; }
-        .message { padding: 8px 10px; border-radius: 8px; font-size: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word; color: var(--text-primary); position: relative; min-width: 80px; }
-        
-        .sent { align-self: flex-end; background-color: var(--msg-sent); border-top-right-radius: 0; }
-        .received { align-self: flex-start; background-color: var(--msg-received); border-top-left-radius: 0; }
+        /* DURUM GÖRÜNTÜLEYİCİ */
+        #status-viewer { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: #000; z-index: 1000; flex-direction: column; justify-content: center; align-items: center; color: white; padding: 20px; text-align: center; }
+        #status-progress { position: absolute; top: 10px; left: 5%; width: 90%; height: 3px; background: rgba(255,255,255,0.3); }
+        #status-bar-fill { height: 100%; background: white; width: 0%; transition: width linear; }
 
-        .reply-context { background: rgba(0,0,0,0.05); border-left: 4px solid var(--primary); padding: 5px; margin-bottom: 5px; border-radius: 4px; font-size: 12px; color: var(--text-secondary); }
-
-        .msg-meta { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 2px; }
-        .msg-time { font-size: 11px; color: var(--text-secondary); }
-        .msg-tick { font-size: 14px; color: #53bdeb; display: none; } /* Mavi Tık */
-        .sent .msg-tick { display: inline; }
-
-        /* Mesaj Menüsü (Sil/Yanıtla) */
-        .msg-options { display: none; position: absolute; top: -30px; background: var(--surface); padding: 5px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 100; font-size: 12px; }
-        .msg-options button { background: none; border: none; color: var(--text-primary); padding: 5px 10px; cursor: pointer; }
-        .message:active .msg-options, .message:focus .msg-options { display: flex; gap: 5px; } 
-
-        /* GİRİŞ ALANI */
-        .input-wrapper { background: var(--input-bg); padding: 5px 10px; }
-        .reply-preview { background: var(--surface); padding: 10px; border-left: 4px solid var(--primary); color: var(--text-primary); display: none; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 5px; border-radius: 5px; }
-        
-        .input-area { display: flex; gap: 8px; align-items: center; padding-bottom: 5px; }
-        #msgInput { flex: 1; border-radius: 25px; border: none; padding: 10px 15px; font-size: 16px; margin: 0; }
-        .send-btn { width: 45px; height: 45px; border-radius: 50%; background: #008069; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .input-area { background: var(--bg); padding: 10px; display: flex; gap: 10px; }
+        #msgInput { flex: 1; border-radius: 20px; border: none; padding: 10px 15px; outline: none; }
+        .send-btn { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -109,55 +55,49 @@
     <header>
         <button id="back-btn" onclick="goBack()">←</button>
         <div class="header-info">
-            <span id="header-title" class="header-title">VyxChat</span>
-            <span id="header-status" class="header-status"></span>
+            <b id="header-title">VyxChat Pro</b>
+            <span id="header-sub" style="font-size:12px; display:block"></span>
         </div>
-        <button id="theme-btn" onclick="toggleTheme()">🌙</button>
+        <button onclick="toggleTheme()" style="background:none; border:none; color:white; font-size:20px;">🌓</button>
     </header>
 
-    <div id="login-screen" class="screen active">
-        <h2 style="color: #008069; margin-bottom: 20px;">VyxChat Pro</h2>
-        <input type="text" id="usernameInput" placeholder="Adınız nedir?">
-        <button class="btn" onclick="login()">Giriş Yap</button>
+    <div id="login-screen" class="screen active" style="justify-content:center; align-items:center; padding:20px;">
+        <div style="background:var(--surface); padding:25px; border-radius:15px; width:100%; text-align:center;">
+            <h2 style="color:var(--primary)">Hoş Geldin</h2>
+            <input type="text" id="usernameInput" placeholder="Kullanıcı Adın">
+            <button class="send-btn" style="width:100%; border-radius:10px" onclick="login()">Giriş Yap</button>
+        </div>
     </div>
 
     <div id="users-screen" class="screen">
-        <div class="my-profile" onclick="editStatus()">
-            <div class="avatar-container">
-                <div class="avatar" id="my-avatar">?</div>
-                <div class="status-dot online"></div>
+        <div class="status-bar" id="status-bar">
+            <div class="status-item" onclick="postStatus()">
+                <div class="status-circle"><div class="status-avatar" id="my-small-avatar">?</div><div class="add-status">+</div></div>
+                <div class="status-name">Durumum</div>
             </div>
-            <div class="user-info">
-                <div class="user-name">Durumum</div>
-                <div class="user-status" id="my-status-text">Müsait ✏️</div>
             </div>
-        </div>
-        <div style="padding: 10px; font-size: 13px; color: var(--text-secondary); background: var(--input-bg);">KİŞİLER</div>
-        <div id="user-list"></div>
+        <div class="user-list" id="user-list"></div>
     </div>
 
     <div id="chat-screen" class="screen">
         <div id="chat-container"></div>
-        
-        <div class="input-wrapper">
-            <div id="reply-preview" class="reply-preview">
-                <span id="reply-text">Mesaj...</span>
-                <button onclick="cancelReply()" style="background:none; border:none; color:red; font-weight:bold;">X</button>
-            </div>
-            
-            <div class="input-area">
-                <input type="text" id="msgInput" placeholder="Mesaj yaz..." autocomplete="off">
-                <button class="send-btn" onclick="sendMessage()">➤</button>
-            </div>
+        <div class="input-area">
+            <input type="text" id="msgInput" placeholder="Mesaj yaz..." autocomplete="off">
+            <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
+    </div>
+
+    <div id="status-viewer" onclick="closeStatus()">
+        <div id="status-progress"><div id="status-bar-fill"></div></div>
+        <div id="status-user" style="position:absolute; top:30px; left:20px; font-weight:bold;"></div>
+        <h2 id="status-content"></h2>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, setDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, setDoc, doc, updateDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- AYARLAR ---
     const firebaseConfig = {
         apiKey: "AIzaSyDo3zkxE-4_V6qs6FQ21_x523gul5EaP7U",
         authDomain: "rumlinx.firebaseapp.com",
@@ -170,244 +110,125 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let myName = "";
-    let chatPartner = "";
-    let chatId = "";
-    let replyingTo = null; // Yanıtlanan mesajı tutar
-    let typingTimeout;
+    let myName = "", chatPartner = "", chatId = "", statusTimer;
 
-    // --- TEMA AYARLARI ---
     window.toggleTheme = () => {
-        const current = document.documentElement.getAttribute("data-theme");
-        const next = current === "dark" ? "light" : "dark";
-        document.documentElement.setAttribute("data-theme", next);
-        document.getElementById('theme-btn').innerText = next === "dark" ? "☀️" : "🌙";
+        const d = document.documentElement;
+        d.getAttribute("data-theme") === "dark" ? d.removeAttribute("data-theme") : d.setAttribute("data-theme", "dark");
     };
 
-    // --- 1. GİRİŞ ---
     window.login = async () => {
         myName = document.getElementById('usernameInput').value.trim();
-        if (!myName) return alert("İsim giriniz!");
-
-        // Kullanıcıyı kaydet (Durum: Müsait varsayılan)
-        await setDoc(doc(db, "users", myName), { 
-            username: myName, 
-            isOnline: true, 
-            status: "Müsait",
-            typingTo: null 
-        }, { merge: true });
-
-        document.getElementById('my-avatar').innerText = myName[0].toUpperCase();
-        
-        // Çıkışta offline yap
-        window.addEventListener('beforeunload', () => {
-            updateDoc(doc(db, "users", myName), { isOnline: false });
-        });
-
+        if(!myName) return;
+        await setDoc(doc(db, "users", myName), { username: myName, isOnline: true, lastLogin: serverTimestamp() }, {merge:true});
+        document.getElementById('my-small-avatar').innerText = myName[0].toUpperCase();
         showScreen('users-screen');
-        listenToUsers();
+        listenData();
     };
 
-    // --- 2. DURUM GÜNCELLEME ---
-    window.editStatus = async () => {
-        const newStatus = prompt("Yeni Durumunuz:", "Müsait");
-        if (newStatus) {
-            await updateDoc(doc(db, "users", myName), { status: newStatus });
-            document.getElementById('my-status-text').innerText = newStatus + " ✏️";
+    // --- DURUM PAYLAŞMA ---
+    window.postStatus = async () => {
+        const text = prompt("Durumunda ne paylaşmak istersin?");
+        if(text) {
+            await setDoc(doc(db, "status", myName), {
+                username: myName,
+                content: text,
+                createdAt: Date.now() // 24 saat kontrolü için
+            });
         }
     };
 
-    // --- 3. KULLANICILAR ---
-    function listenToUsers() {
-        onSnapshot(collection(db, "users"), (snapshot) => {
+    function listenData() {
+        // Kullanıcıları Listele
+        onSnapshot(collection(db, "users"), (s) => {
             const list = document.getElementById('user-list');
             list.innerHTML = "";
-            snapshot.forEach((docSnap) => {
-                const user = docSnap.data();
-                if (user.username !== myName) {
-                    list.innerHTML += `
-                        <div class="user-item" onclick="startChat('${user.username}')">
-                            <div class="avatar-container">
-                                <div class="avatar">${user.username[0].toUpperCase()}</div>
-                                <div class="status-dot ${user.isOnline ? 'online' : ''}"></div>
-                            </div>
-                            <div class="user-info">
-                                <div class="user-name">${user.username}</div>
-                                <div class="user-status">${user.status || 'Müsait'}</div>
-                            </div>
-                        </div>`;
-                } else {
-                    // Kendi durumumu güncelle
-                    document.getElementById('my-status-text').innerText = (user.status || 'Müsait') + " ✏️";
+            s.forEach(d => {
+                const u = d.data();
+                if(u.username !== myName) {
+                    list.innerHTML += `<div class="user-item" onclick="startChat('${u.username}')">
+                        <div class="status-circle" style="width:45px; height:45px; border:none">
+                            <div class="status-avatar" style="font-size:18px">${u.username[0].toUpperCase()}</div>
+                        </div>
+                        <div><b>${u.username}</b><br><small style="color:${u.isOnline?'#25d366':'gray'}">${u.isOnline?'çevrimiçi':'çevrimdışı'}</small></div>
+                    </div>`;
+                }
+            });
+        });
+
+        // Durumları Listele
+        onSnapshot(collection(db, "status"), (s) => {
+            const bar = document.getElementById('status-bar');
+            const myStatusBtn = bar.firstElementChild.outerHTML;
+            bar.innerHTML = myStatusBtn;
+            const now = Date.now();
+            s.forEach(d => {
+                const st = d.data();
+                if(now - st.createdAt < 86400000) { // 24 Saat Kontrolü
+                    if(st.username !== myName) {
+                        const item = document.createElement('div');
+                        item.className = 'status-item';
+                        item.onclick = () => viewStatus(st.username, st.content);
+                        item.innerHTML = `<div class="status-circle active"><div class="status-avatar">${st.username[0].toUpperCase()}</div></div><div class="status-name">${st.username}</div>`;
+                        bar.appendChild(item);
+                    }
                 }
             });
         });
     }
 
-    // --- 4. SOHBET BAŞLAT ---
-    window.startChat = (partner) => {
-        chatPartner = partner;
-        chatId = [myName, chatPartner].sort().join("_");
-        
-        showScreen('chat-screen');
-        document.getElementById('header-title').innerText = chatPartner;
-        document.getElementById('header-status').innerText = "";
-        document.getElementById('back-btn').style.display = 'block';
-        
-        listenToMessages();
-        listenToPartnerStatus();
+    // --- DURUM İZLEME ---
+    window.viewStatus = (user, content) => {
+        const viewer = document.getElementById('status-viewer');
+        const bar = document.getElementById('status-bar-fill');
+        document.getElementById('status-user').innerText = user;
+        document.getElementById('status-content').innerText = content;
+        viewer.style.display = 'flex';
+        bar.style.width = '0%';
+        setTimeout(() => { bar.style.transition = 'width 4s linear'; bar.style.width = '100%'; }, 50);
+        statusTimer = setTimeout(closeStatus, 4050);
     };
 
-    // --- 5. MESAJ GÖNDERME ---
-    // Yazıyor... özelliği için
-    const msgInput = document.getElementById('msgInput');
-    msgInput.addEventListener('input', () => {
-        updateDoc(doc(db, "users", myName), { typingTo: chatPartner });
-        clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => {
-            updateDoc(doc(db, "users", myName), { typingTo: null });
-        }, 2000); // 2 saniye yazmazsa durdu say
-    });
+    window.closeStatus = () => {
+        document.getElementById('status-viewer').style.display = 'none';
+        document.getElementById('status-bar-fill').style.transition = 'none';
+        clearTimeout(statusTimer);
+    };
 
-    // Enter tuşu ile gönderme
-    msgInput.addEventListener("keypress", (e) => {
-        if(e.key === 'Enter') sendMessage();
-    });
+    window.startChat = (p) => {
+        chatPartner = p;
+        chatId = [myName, p].sort().join("_");
+        showScreen('chat-screen');
+        document.getElementById('header-title').innerText = p;
+        document.getElementById('back-btn').style.display = "block";
+        listenMessages();
+    };
 
     window.sendMessage = async () => {
-        const text = msgInput.value.trim();
-        if (text && chatId) {
-            await addDoc(collection(db, "messages"), {
-                chatId: chatId,
-                sender: myName,
-                text: text,
-                replyTo: replyingTo ? replyingTo : null, // Yanıtlanıyorsa ekle
-                createdAt: serverTimestamp()
-            });
-            msgInput.value = "";
-            cancelReply();
-            updateDoc(doc(db, "users", myName), { typingTo: null });
-        }
+        const inp = document.getElementById('msgInput');
+        if(!inp.value.trim()) return;
+        await addDoc(collection(db, "messages"), { chatId, sender: myName, text: inp.value, createdAt: serverTimestamp() });
+        inp.value = "";
     };
 
-    // --- 6. MESAJLARI DİNLE (Zaman, Yanıt, Silme) ---
-    function listenToMessages() {
-        onSnapshot(collection(db, "messages"), (snapshot) => {
-            const container = document.getElementById('chat-container');
-            let msgs = [];
-            snapshot.forEach(doc => msgs.push({ id: doc.id, ...doc.data() })); // ID'yi de al
-
-            msgs.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
-            
-            container.innerHTML = "";
-            msgs.forEach(msg => {
-                if (msg.chatId === chatId) {
-                    const isMe = msg.sender === myName;
-                    
-                    // Saat formatı (14:30)
-                    let timeStr = "";
-                    if(msg.createdAt) {
-                        const date = new Date(msg.createdAt.seconds * 1000);
-                        timeStr = date.getHours().toString().padStart(2,'0') + ":" + date.getMinutes().toString().padStart(2,'0');
-                    }
-
-                    // Yanıt kutusu HTML'i
-                    let replyHtml = "";
-                    if (msg.replyTo) {
-                        replyHtml = `<div class="reply-context">
-                            <strong>${msg.replyTo.sender}</strong>: ${msg.replyTo.text}
-                        </div>`;
-                    }
-
-                    // Mesaj HTML'i
-                    container.innerHTML += `
-                        <div class="message ${isMe ? 'sent' : 'received'}" onclick="showOptions(this, '${msg.id}', '${msg.sender}', '${msg.text}')">
-                            ${replyHtml}
-                            ${msg.text}
-                            <div class="msg-meta">
-                                <span class="msg-time">${timeStr}</span>
-                                <span class="msg-tick">✓✓</span>
-                            </div>
-                            <div class="msg-options" id="opt-${msg.id}">
-                                <button onclick="setReply('${msg.sender}', '${msg.text}')">↩️ Yanıtla</button>
-                                ${isMe ? `<button onclick="deleteMsg('${msg.id}')" style="color:red">🗑️ Sil</button>` : ''}
-                            </div>
-                        </div>`;
+    function listenMessages() {
+        onSnapshot(collection(db, "messages"), (s) => {
+            const cont = document.getElementById('chat-container');
+            let msgs = []; s.forEach(d => msgs.push(d.data()));
+            msgs.sort((a,b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+            cont.innerHTML = "";
+            msgs.forEach(m => {
+                if(m.chatId === chatId) {
+                    const isMe = m.sender === myName;
+                    cont.innerHTML += `<div class="message ${isMe?'sent':'received'}">${m.text}<div class="msg-info">✓✓</div></div>`;
                 }
             });
-            container.scrollTop = container.scrollHeight;
+            cont.scrollTop = cont.scrollHeight;
         });
     }
 
-    // --- 7. EKSTRA FONKSİYONLAR ---
-    
-    // Partnerin Yazıyor... ve Online durumunu dinle
-    function listenToPartnerStatus() {
-        onSnapshot(doc(db, "users", chatPartner), (doc) => {
-            if(doc.exists()) {
-                const data = doc.data();
-                const statusElem = document.getElementById('header-status');
-                
-                if (data.typingTo === myName) {
-                    statusElem.innerText = "yazıyor...";
-                    statusElem.style.color = "#25d366";
-                } else if (data.isOnline) {
-                    statusElem.innerText = "Çevrimiçi";
-                    statusElem.style.color = "white";
-                } else {
-                    statusElem.innerText = "Son görülme: " + (data.lastSeen ? new Date(data.lastSeen.seconds*1000).toLocaleTimeString().slice(0,5) : "");
-                    statusElem.style.color = "#ddd";
-                }
-            }
-        });
-    }
-
-    // Mesaj Seçeneklerini Göster (Basit Toggle)
-    window.showOptions = (el, id, sender, text) => {
-        // Mobilde tıklayınca menü açılması için basit mantık
-        // Gerçek uygulamada long-press kullanılır ama web için click yeterli
-        const opt = document.getElementById(`opt-${id}`);
-        const allOpts = document.querySelectorAll('.msg-options');
-        allOpts.forEach(o => { if(o !== opt) o.style.display = 'none'; }); // Diğerlerini kapat
-        
-        opt.style.display = opt.style.display === 'flex' ? 'none' : 'flex';
-        // Olayın yukarı taşmasını engelleme (basitçe)
-        setTimeout(() => opt.style.display = 'none', 4000); // 4 saniye sonra otomatik kapan
-    };
-
-    // Mesaj Sil
-    window.deleteMsg = async (id) => {
-        if(confirm("Mesajı herkesten silmek istiyor musun?")) {
-            await deleteDoc(doc(db, "messages", id));
-        }
-    };
-
-    // Yanıtla
-    window.setReply = (sender, text) => {
-        replyingTo = { sender, text };
-        document.getElementById('reply-preview').style.display = 'flex';
-        document.getElementById('reply-text').innerText = `${sender}: ${text.substring(0, 20)}...`;
-        document.getElementById('msgInput').focus();
-    };
-
-    window.cancelReply = () => {
-        replyingTo = null;
-        document.getElementById('reply-preview').style.display = 'none';
-    };
-
-    // Ekran Değiştirme
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-
-    window.goBack = () => {
-        showScreen('users-screen');
-        document.getElementById('header-title').innerText = "VyxChat";
-        document.getElementById('header-status').innerText = "";
-        document.getElementById('back-btn').style.display = 'none';
-    };
-
+    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    window.goBack = () => { showScreen('users-screen'); document.getElementById('back-btn').style.display="none"; };
 </script>
 </body>
 </html>
